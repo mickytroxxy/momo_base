@@ -1,0 +1,28 @@
+trigger:
+  branches:
+    exclude:
+      - '*'
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+- task: UseNode@1
+  inputs:
+    versionSpec: '14.x'
+    checkLatest: true
+    displayName: 'Install Node.js'
+
+- script: npm install
+  displayName: 'Install Dependencies'
+
+- script: npm run build-ios
+  displayName: 'Build Project'
+
+- script: |
+    npm install -g appcenter-cli
+    appcenter login --token $(APP_CENTER_ACCESS_TOKEN)
+    appcenter codepush release-react -a Niresh.S-mtn.com/MTN_MOMO -d Staging
+  displayName: 'Upload to App Center'
+  env:
+    APP_CENTER_ACCESS_TOKEN: $(APP_CENTER_ACCESS_TOKEN)
